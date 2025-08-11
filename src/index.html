@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru" class="bg-gray-900 text-white">
+<head>
+  <meta charset="UTF-8" />
+  <title>Что то вроде саундборда</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    button {
+      transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+      will-change: transform, box-shadow;
+      user-select: none;
+      border-radius: 0.375rem; /* rounded-md */
+      font-weight: 600;
+    }
+    button:focus {
+      outline: 2px solid #3b82f6;
+      outline-offset: 2px;
+    }
+    .btn-play {
+      background-color: #2563eb; /* blue-600 */
+      box-shadow: 0 4px 6px rgb(37 99 235 / 0.5);
+      color: white;
+    }
+    .btn-play:hover {
+      background-color: #1d4ed8; /* blue-700 */
+      box-shadow: 0 6px 10px rgb(29 78 216 / 0.7);
+    }
+    .btn-play:active {
+      background-color: #1e40af; /* blue-800 */
+      box-shadow: 0 2px 4px rgb(30 64 175 / 0.8);
+      transform: scale(0.95);
+    }
+    .btn-open {
+      background-color: #374151; /* gray-700 */
+      color: #d1d5db; /* gray-300 */
+      box-shadow: 0 3px 5px rgb(55 65 81 / 0.5);
+    }
+    .btn-open:hover {
+      background-color: #4b5563; /* gray-600 */
+      box-shadow: 0 5px 8px rgb(75 85 99 / 0.7);
+    }
+    .btn-open:active {
+      background-color: #1f2937; /* gray-800 */
+      box-shadow: 0 2px 4px rgb(31 41 55 / 0.8);
+      transform: scale(0.95);
+    }
+    .btn-delete {
+      background-color: #dc2626; /* red-600 */
+      color: white;
+      box-shadow: 0 4px 6px rgb(220 38 38 / 0.5);
+    }
+    .btn-delete:hover {
+      background-color: #b91c1c; /* red-700 */
+      box-shadow: 0 6px 10px rgb(185 28 28 / 0.7);
+    }
+    .btn-delete:active {
+      background-color: #991b1b; /* red-800 */
+      box-shadow: 0 2px 4px rgb(153 27 27 / 0.8);
+      transform: scale(0.95);
+    }
+    .sound-card {
+      background-color: #111827; /* gray-900 */
+      border-radius: 0.5rem; /* rounded-lg */
+      padding: 1.25rem; /* p-5 */
+      box-shadow: 0 5px 15px rgb(0 0 0 / 0.7);
+      transition: box-shadow 0.3s ease, transform 0.3s ease;
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .sound-card:hover {
+      box-shadow: 0 10px 25px rgb(37 99 235 / 0.8);
+      transform: translateY(-5px);
+    }
+    .name-input {
+      background-color: transparent;
+      border: none;
+      border-bottom: 2px solid #374151; /* gray-700 */
+      color: #e0e7ff; /* light indigo */
+      font-size: 1.25rem; /* text-xl */
+      font-weight: 700;
+      padding: 0.5rem 0.25rem;
+      transition: border-color 0.3s ease;
+      flex-grow: 1;
+    }
+    .name-input::placeholder {
+      color: #6b7280; /* gray-500 */
+    }
+    .name-input:focus {
+      outline: none;
+      border-bottom-color: #2563eb; /* blue-600 */
+      color: #60a5fa; /* blue-400 */
+      background-color: #1e40af33; /* blue with opacity */
+    }
+    /* Блок для бинда клавиши */
+    .keybind-input {
+      width: 50px;
+      text-align: center;
+      background-color: transparent;
+      border: none;
+      border-bottom: 2px solid #374151;
+      color: #a5b4fc;
+      font-weight: 700;
+      font-size: 1.25rem;
+      padding: 0.3rem 0.2rem;
+      cursor: pointer;
+      transition: border-color 0.3s ease;
+      user-select: none;
+      margin-left: 0.75rem;
+      border-radius: 0.25rem;
+    }
+    .keybind-input:focus {
+      outline: none;
+      border-bottom-color: #2563eb;
+      color: #60a5fa;
+      background-color: #1e40af33;
+    }
+    .progress {
+      height: 6px;
+      background-color: #374151; /* gray-700 */
+      border-radius: 9999px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .progress-bar {
+      height: 100%;
+      background-color: #2563eb; /* blue-600 */
+      width: 0;
+      border-radius: 9999px;
+      transition: width 0.15s linear;
+    }
+    @keyframes spinJump {
+      0% {
+        transform: translateY(0) rotate(0deg);
+      }
+      30% {
+        transform: translateY(-10px) rotate(90deg);
+      }
+      60% {
+        transform: translateY(0) rotate(180deg);
+      }
+      100% {
+        transform: translateY(0) rotate(360deg);
+      }
+    }
+    .btn-play.animate {
+      animation: spinJump 0.7s ease forwards;
+    }
+    #dropZone {
+      border: 2px dashed #2563eb;
+      border-radius: 0.75rem;
+      padding: 3rem 1rem;
+      text-align: center;
+      color: #93c5fd;
+      font-weight: 600;
+      font-size: 1.25rem;
+      user-select: none;
+      cursor: pointer;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+      margin-bottom: 1.5rem;
+    }
+    #dropZone:hover {
+      background-color: #1e40af22;
+      border-color: #1e40af;
+      color: #bfdbfe;
+    }
+    #dropZone.dragover {
+      background-color: #2563eb22;
+      border-color: #2563eb;
+      color: #60a5fa;
+    }
+  </style>
+</head>
+<body class="flex flex-col items-center min-h-screen p-6 bg-gray-900 text-white">
+  <h1 class="text-4xl font-extrabold mb-6 tracking-wide select-none" style="text-shadow: 0 0 6px #2563eb;">
+    какой то там саундборд
+  </h1>
+
+  <div id="dropZone" tabindex="0">
+    Перетащите MP3 сюда или нажмите, чтобы выбрать
+    <input type="file" id="fileInput" accept="audio/*" multiple class="hidden" />
+  </div>
+
+  <div id="soundList" class="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+
+  <script>
+    const soundList = document.getElementById("soundList");
+    const dropZone = document.getElementById("dropZone");
+    const fileInput = document.getElementById("fileInput");
+
+    let sounds = JSON.parse(localStorage.getItem("sounds") || "[]");
+    renderSounds();
+
+    // Вспомогательная функция валидации клавиши для бинда (латинские буквы и цифры)
+    function isValidKey(key) {
+      return /^[a-z0-9]$/i.test(key);
+    }
+
+    function renderSounds() {
+      soundList.innerHTML = "";
+      sounds.forEach((sound, index) => {
+        const card = document.createElement("div");
+        card.className = "sound-card";
+
+        // Контейнер названия и бинда
+        const titleContainer = document.createElement("div");
+        titleContainer.className = "flex items-center";
+
+        const nameInput = document.createElement("input");
+        nameInput.type = "text";
+        nameInput.value = sound.name;
+        nameInput.placeholder = "Введите название";
+        nameInput.className = "name-input flex-grow";
+        nameInput.addEventListener("input", () => {
+          sounds[index].name = nameInput.value;
+          saveSounds();
+        });
+
+        const keybindInput = document.createElement("input");
+        keybindInput.type = "text";
+        keybindInput.maxLength = 1;
+        keybindInput.placeholder = "-";
+        keybindInput.className = "keybind-input";
+        keybindInput.value = sound.keybind || "";
+        keybindInput.title = "Нажмите клавишу для бинда";
+
+        keybindInput.addEventListener("keydown", (e) => {
+          e.preventDefault();
+          const key = e.key.length === 1 ? e.key.toLowerCase() : "";
+          if (key && isValidKey(key)) {
+            // Проверяем, не занята ли клавиша другим звуком
+            const conflictIndex = sounds.findIndex(
+              (s, i) => s.keybind === key && i !== index
+            );
+            if (conflictIndex !== -1) {
+              alert(`Клавиша "${key.toUpperCase()}" уже назначена другому звуку.`);
+              return;
+            }
+            sounds[index].keybind = key;
+            keybindInput.value = key.toUpperCase();
+            saveSounds();
+          } else if (e.key === "Backspace" || e.key === "Delete") {
+            // Удаляем бинд
+            sounds[index].keybind = "";
+            keybindInput.value = "";
+            saveSounds();
+          }
+        });
+
+        titleContainer.appendChild(nameInput);
+        titleContainer.appendChild(keybindInput);
+
+        const controls = document.createElement("div");
+        controls.className = "flex gap-3 mt-3";
+
+        const playBtn = document.createElement("button");
+        playBtn.title = "Воспроизвести";
+        playBtn.className = "btn-play";
+        playBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+          <path d="M14.752 11.168l-6.518-3.75A1 1 0 007 8.168v7.664a1 1 0 001.234.97l6.518-3.75a1 1 0 000-1.664z"/>
+        </svg>`;
+        playBtn.onclick = () => {
+          if (playBtn.classList.contains("animate")) return; // не запускаем если уже анимируется
+          playBtn.classList.add("animate");
+          playSound(sound).finally(() => {
+            setTimeout(() => playBtn.classList.remove("animate"), 700);
+          });
+        };
+
+        const openBtn = document.createElement("button");
+        openBtn.title = "Открыть в новой вкладке";
+        openBtn.className = "btn-open";
+        openBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+          <path d="M14 3h7v7m0 0L10 21l-7-7 11-11z"/>
+        </svg>`;
+        openBtn.onclick = () => openShareableTab(sound);
+
+        const delBtn = document.createElement("button");
+        delBtn.title = "Удалить";
+        delBtn.className = "btn-delete";
+        delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
+          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a1 1 0 00-1 1v1h6V4a1 1 0 00-1-1m-4 0h4"/>
+        </svg>`;
+        delBtn.onclick = () => {
+          if (confirm("Удалить звук?")) {
+            sounds.splice(index, 1);
+            saveSounds();
+            renderSounds();
+          }
+        };
+
+        controls.appendChild(playBtn);
+        controls.appendChild(openBtn);
+        controls.appendChild(delBtn);
+
+        const progress = document.createElement("div");
+        progress.className = "progress";
+
+        const progressBar = document.createElement("div");
+        progressBar.className = "progress-bar";
+
+        progress.appendChild(progressBar);
+
+        card.appendChild(titleContainer);
+        card.appendChild(controls);
+        card.appendChild(progress);
+
+        soundList.appendChild(card);
+
+        sound._progressBar = progressBar;
+      });
+    }
+
+    function saveSounds() {
+      localStorage.setItem("sounds", JSON.stringify(sounds));
+    }
+
+    function playSound(sound) {
+      return new Promise((resolve) => {
+        const audio = new Audio(sound.data);
+        audio.crossOrigin = "anonymous";
+        audio.play();
+
+        const pb = sound._progressBar;
+        pb.style.width = "0%";
+
+        const interval = setInterval(() => {
+          if (!audio.duration || isNaN(audio.duration)) return;
+          const progress = (audio.currentTime / audio.duration) * 100;
+          pb.style.width = progress + "%";
+          if (audio.ended) {
+            clearInterval(interval);
+            pb.style.width = "0%";
+            resolve();
+          }
+        }, 100);
+      });
+    }
+
+    function openShareableTab(sound) {
+      const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(
+        sound.name
+      )}</title></head><body style="background:#111;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif"><h2 style="margin-bottom:16px">${escapeHtml(
+        sound.name
+      )}</h2><audio id="a" controls autoplay src="${sound.data}"></audio><p style="font-size:12px;color:#ccc;margin-top:12px">Поделитесь этой вкладкой в Google Meet (Share → A Chrome tab → Share audio)</p><script>document.querySelector('audio').volume=1;<\/script></body></html>`;
+      const w = window.open();
+      w.document.write(html);
+      w.document.close();
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/[&<>\\"]/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])
+      );
+    }
+
+    function fileToBase64(file) {
+      return new Promise((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res(reader.result);
+        reader.onerror = rej;
+        reader.readAsDataURL(file);
+      });
+    }
+
+    dropZone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", handleFiles);
+
+    dropZone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropZone.classList.add("dragover");
+    });
+    dropZone.addEventListener("dragleave", () => {
+      dropZone.classList.remove("dragover");
+    });
+    dropZone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropZone.classList.remove("dragover");
+      handleFiles({ target: { files: e.dataTransfer.files } });
+    });
+
+    async function handleFiles(e) {
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        if (!file.type.startsWith("audio/")) continue;
+        const data = await fileToBase64(file);
+        sounds.unshift({ name: file.name.replace(/\.[^/.]+$/, ""), data });
+        saveSounds();
+      }
+      renderSounds();
+    }
+
+    document.addEventListener("keydown", (e) => {
+      const tag = document.activeElement.tagName.toLowerCase();
+      if (tag === "input" || tag === "textarea") return; 
+
+      const key = e.key.toLowerCase();
+
+      const sound = sounds.find(s => s.keybind && s.keybind.toLowerCase() === key);
+      if (sound) {
+        playSound(sound);
+      }
+    });
+  </script>
+</body>
+</html>
