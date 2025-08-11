@@ -10,7 +10,7 @@
       transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
       will-change: transform, box-shadow;
       user-select: none;
-      border-radius: 0.375rem; /* rounded-md */
+      border-radius: 0.375rem;
       font-weight: 600;
     }
     button:focus {
@@ -18,83 +18,111 @@
       outline-offset: 2px;
     }
     .btn-play {
-      background-color: #2563eb; /* blue-600 */
+      background-color: #2563eb;
       box-shadow: 0 4px 6px rgb(37 99 235 / 0.5);
       color: white;
     }
     .btn-play:hover {
-      background-color: #1d4ed8; /* blue-700 */
+      background-color: #1d4ed8;
       box-shadow: 0 6px 10px rgb(29 78 216 / 0.7);
     }
     .btn-play:active {
-      background-color: #1e40af; /* blue-800 */
+      background-color: #1e40af;
       box-shadow: 0 2px 4px rgb(30 64 175 / 0.8);
       transform: scale(0.95);
     }
+    .btn-pause {
+      background-color: #f59e0b;
+      box-shadow: 0 4px 6px rgb(245 158 11 / 0.5);
+      color: white;
+    }
+    .btn-pause:hover {
+      background-color: #d97706;
+      box-shadow: 0 6px 10px rgb(217 119 6 / 0.7);
+    }
+    .btn-pause:active {
+      background-color: #b45309;
+      box-shadow: 0 2px 4px rgb(180 83 9 / 0.8);
+      transform: scale(0.95);
+    }
     .btn-open {
-      background-color: #374151; /* gray-700 */
-      color: #d1d5db; /* gray-300 */
+      background-color: #374151;
+      color: #d1d5db;
       box-shadow: 0 3px 5px rgb(55 65 81 / 0.5);
     }
     .btn-open:hover {
-      background-color: #4b5563; /* gray-600 */
+      background-color: #4b5563;
       box-shadow: 0 5px 8px rgb(75 85 99 / 0.7);
     }
     .btn-open:active {
-      background-color: #1f2937; /* gray-800 */
+      background-color: #1f2937;
       box-shadow: 0 2px 4px rgb(31 41 55 / 0.8);
       transform: scale(0.95);
     }
     .btn-delete {
-      background-color: #dc2626; /* red-600 */
+      background-color: #dc2626;
       color: white;
       box-shadow: 0 4px 6px rgb(220 38 38 / 0.5);
     }
     .btn-delete:hover {
-      background-color: #b91c1c; /* red-700 */
+      background-color: #b91c1c;
       box-shadow: 0 6px 10px rgb(185 28 28 / 0.7);
     }
     .btn-delete:active {
-      background-color: #991b1b; /* red-800 */
+      background-color: #991b1b;
       box-shadow: 0 2px 4px rgb(153 27 27 / 0.8);
       transform: scale(0.95);
     }
     .sound-card {
-      background-color: #111827; /* gray-900 */
-      border-radius: 0.5rem; /* rounded-lg */
-      padding: 1.25rem; /* p-5 */
+      background-color: #111827;
+      border-radius: 0.5rem;
+      padding: 1.25rem;
       box-shadow: 0 5px 15px rgb(0 0 0 / 0.7);
-      transition: box-shadow 0.3s ease, transform 0.3s ease;
       user-select: none;
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+    }
+    .sound-card.show {
+      opacity: 1;
+      transform: translateY(0);
     }
     .sound-card:hover {
       box-shadow: 0 10px 25px rgb(37 99 235 / 0.8);
       transform: translateY(-5px);
     }
+
+    .flex.items-center {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: nowrap;
+    }
     .name-input {
       background-color: transparent;
       border: none;
-      border-bottom: 2px solid #374151; /* gray-700 */
-      color: #e0e7ff; /* light indigo */
-      font-size: 1.25rem; /* text-xl */
+      border-bottom: 2px solid #374151;
+      color: #e0e7ff;
+      font-size: 1.25rem;
       font-weight: 700;
       padding: 0.5rem 0.25rem;
       transition: border-color 0.3s ease;
       flex-grow: 1;
+      min-width: 0;
+      margin-right: 0.5rem;
     }
     .name-input::placeholder {
-      color: #6b7280; /* gray-500 */
+      color: #6b7280;
     }
     .name-input:focus {
       outline: none;
-      border-bottom-color: #2563eb; /* blue-600 */
-      color: #60a5fa; /* blue-400 */
-      background-color: #1e40af33; /* blue with opacity */
+      border-bottom-color: #2563eb;
+      color: #60a5fa;
+      background-color: #1e40af33;
     }
-    /* Блок для бинда клавиши */
     .keybind-input {
       width: 50px;
       text-align: center;
@@ -108,8 +136,8 @@
       cursor: pointer;
       transition: border-color 0.3s ease;
       user-select: none;
-      margin-left: 0.75rem;
       border-radius: 0.25rem;
+      flex-shrink: 0;
     }
     .keybind-input:focus {
       outline: none;
@@ -119,17 +147,18 @@
     }
     .progress {
       height: 6px;
-      background-color: #374151; /* gray-700 */
+      background-color: #374151;
       border-radius: 9999px;
       overflow: hidden;
       width: 100%;
     }
     .progress-bar {
       height: 100%;
-      background-color: #2563eb; /* blue-600 */
+      background-color: #2563eb;
       width: 0;
       border-radius: 9999px;
-      transition: width 0.15s linear;
+      transition: width 0.2s linear, opacity 0.4s ease;
+      opacity: 0.8;
     }
     @keyframes spinJump {
       0% {
@@ -191,9 +220,11 @@
     const fileInput = document.getElementById("fileInput");
 
     let sounds = JSON.parse(localStorage.getItem("sounds") || "[]");
+
+    const playingAudios = new Map();
+
     renderSounds();
 
-    // Вспомогательная функция валидации клавиши для бинда (латинские буквы и цифры)
     function isValidKey(key) {
       return /^[a-z0-9]$/i.test(key);
     }
@@ -204,7 +235,8 @@
         const card = document.createElement("div");
         card.className = "sound-card";
 
-        // Контейнер названия и бинда
+        setTimeout(() => card.classList.add("show"), 10);
+
         const titleContainer = document.createElement("div");
         titleContainer.className = "flex items-center";
 
@@ -230,7 +262,6 @@
           e.preventDefault();
           const key = e.key.length === 1 ? e.key.toLowerCase() : "";
           if (key && isValidKey(key)) {
-            // Проверяем, не занята ли клавиша другим звуком
             const conflictIndex = sounds.findIndex(
               (s, i) => s.keybind === key && i !== index
             );
@@ -242,7 +273,6 @@
             keybindInput.value = key.toUpperCase();
             saveSounds();
           } else if (e.key === "Backspace" || e.key === "Delete") {
-            // Удаляем бинд
             sounds[index].keybind = "";
             keybindInput.value = "";
             saveSounds();
@@ -263,11 +293,21 @@
           <path d="M14.752 11.168l-6.518-3.75A1 1 0 007 8.168v7.664a1 1 0 001.234.97l6.518-3.75a1 1 0 000-1.664z"/>
         </svg>`;
         playBtn.onclick = () => {
-          if (playBtn.classList.contains("animate")) return; // не запускаем если уже анимируется
+          playSound(sound);
           playBtn.classList.add("animate");
-          playSound(sound).finally(() => {
-            setTimeout(() => playBtn.classList.remove("animate"), 700);
-          });
+          setTimeout(() => playBtn.classList.remove("animate"), 700);
+        };
+
+        const pauseBtn = document.createElement("button");
+        pauseBtn.title = "Пауза";
+        pauseBtn.className = "btn-pause";
+        pauseBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+          <rect x="6" y="4" width="4" height="16"></rect>
+          <rect x="14" y="4" width="4" height="16"></rect>
+        </svg>`;
+        pauseBtn.onclick = () => {
+          pauseSound(sound);
         };
 
         const openBtn = document.createElement("button");
@@ -287,14 +327,16 @@
           <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a1 1 0 00-1 1v1h6V4a1 1 0 00-1-1m-4 0h4"/>
         </svg>`;
         delBtn.onclick = () => {
-          if (confirm("Удалить звук?")) {
-            sounds.splice(index, 1);
+          fadeOutRemove(card, () => {
+            stopSound(sound);
+            sounds.splice(sounds.indexOf(sound), 1);
             saveSounds();
             renderSounds();
-          }
+          });
         };
 
         controls.appendChild(playBtn);
+        controls.appendChild(pauseBtn);
         controls.appendChild(openBtn);
         controls.appendChild(delBtn);
 
@@ -316,30 +358,78 @@
       });
     }
 
+    function fadeOutRemove(element, callback) {
+      element.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+      element.style.opacity = "0";
+      element.style.transform = "translateY(15px)";
+      setTimeout(callback, 400);
+    }
+
     function saveSounds() {
       localStorage.setItem("sounds", JSON.stringify(sounds));
     }
 
+    const playCooldown = 500;
+    const lastPlayTime = new Map();
+
     function playSound(sound) {
-      return new Promise((resolve) => {
-        const audio = new Audio(sound.data);
-        audio.crossOrigin = "anonymous";
-        audio.play();
+      const now = Date.now();
+      const lastTime = lastPlayTime.get(sound) || 0;
+      if (now - lastTime < playCooldown) {
+        return;
+      }
+      lastPlayTime.set(sound, now);
 
-        const pb = sound._progressBar;
-        pb.style.width = "0%";
+      stopSound(sound);
 
-        const interval = setInterval(() => {
-          if (!audio.duration || isNaN(audio.duration)) return;
-          const progress = (audio.currentTime / audio.duration) * 100;
-          pb.style.width = progress + "%";
-          if (audio.ended) {
-            clearInterval(interval);
-            pb.style.width = "0%";
-            resolve();
-          }
-        }, 100);
-      });
+      const audio = new Audio(sound.data);
+      audio.crossOrigin = "anonymous";
+      audio.play();
+
+      const pb = sound._progressBar;
+      pb.style.opacity = "0.8";
+      pb.style.width = "0%";
+
+      const interval = setInterval(() => {
+        if (!audio.duration || isNaN(audio.duration)) return;
+        const progress = (audio.currentTime / audio.duration) * 100;
+        pb.style.width = progress + "%";
+        if (audio.ended) {
+          clearInterval(interval);
+          pb.style.width = "0%";
+          pb.style.opacity = "0";
+          playingAudios.delete(sound);
+        }
+      }, 100);
+
+      playingAudios.set(sound, { audio, interval });
+    }
+
+    function pauseSound(sound) {
+      const player = playingAudios.get(sound);
+      if (player && player.audio) {
+        player.audio.pause();
+        clearInterval(player.interval);
+        playingAudios.delete(sound);
+        if (sound._progressBar) {
+          sound._progressBar.style.opacity = "0";
+          sound._progressBar.style.width = "0%";
+        }
+      }
+    }
+
+    function stopSound(sound) {
+      const player = playingAudios.get(sound);
+      if (player && player.audio) {
+        player.audio.pause();
+        player.audio.currentTime = 0;
+        clearInterval(player.interval);
+        playingAudios.delete(sound);
+        if (sound._progressBar) {
+          sound._progressBar.style.opacity = "0";
+          sound._progressBar.style.width = "0%";
+        }
+      }
     }
 
     function openShareableTab(sound) {
@@ -397,7 +487,7 @@
 
     document.addEventListener("keydown", (e) => {
       const tag = document.activeElement.tagName.toLowerCase();
-      if (tag === "input" || tag === "textarea") return; 
+      if (tag === "input" || tag === "textarea") return;
 
       const key = e.key.toLowerCase();
 
