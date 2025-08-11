@@ -6,6 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* стили как в предыдущем примере */
     button {
       transition: box-shadow 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
       will-change: transform, box-shadow;
@@ -45,20 +46,6 @@
       box-shadow: 0 2px 4px rgb(180 83 9 / 0.8);
       transform: scale(0.95);
     }
-    .btn-open {
-      background-color: #374151;
-      color: #d1d5db;
-      box-shadow: 0 3px 5px rgb(55 65 81 / 0.5);
-    }
-    .btn-open:hover {
-      background-color: #4b5563;
-      box-shadow: 0 5px 8px rgb(75 85 99 / 0.7);
-    }
-    .btn-open:active {
-      background-color: #1f2937;
-      box-shadow: 0 2px 4px rgb(31 41 55 / 0.8);
-      transform: scale(0.95);
-    }
     .btn-delete {
       background-color: #dc2626;
       color: white;
@@ -73,6 +60,20 @@
       box-shadow: 0 2px 4px rgb(153 27 27 / 0.8);
       transform: scale(0.95);
     }
+    .btn-stop {
+      background-color: #ef4444;
+      color: white;
+      box-shadow: 0 4px 6px rgb(239 68 68 / 0.6);
+    }
+    .btn-stop:hover {
+      background-color: #dc2626;
+      box-shadow: 0 6px 10px rgb(220 38 38 / 0.8);
+    }
+    .btn-stop:active {
+      background-color: #b91c1c;
+      box-shadow: 0 2px 4px rgb(185 28 28 / 0.9);
+      transform: scale(0.95);
+    }
     .sound-card {
       background-color: #111827;
       border-radius: 0.5rem;
@@ -85,6 +86,7 @@
       opacity: 0;
       transform: translateY(15px);
       transition: opacity 0.4s ease, transform 0.4s ease;
+      cursor: pointer;
     }
     .sound-card.show {
       opacity: 1;
@@ -94,7 +96,11 @@
       box-shadow: 0 10px 25px rgb(37 99 235 / 0.8);
       transform: translateY(-5px);
     }
-
+    .sound-card.selected {
+      box-shadow: 0 0 15px 4px #60a5fa;
+      transform: translateY(-5px);
+      border: 2px solid #60a5fa;
+    }
     .flex.items-center {
       display: flex;
       align-items: center;
@@ -200,6 +206,23 @@
       border-color: #2563eb;
       color: #60a5fa;
     }
+
+    /* Пояснение управления */
+    #controls-info {
+      max-width: 600px;
+      margin-top: 2rem;
+      padding: 1rem 1.5rem;
+      background: #1f2937;
+      border-radius: 0.5rem;
+      box-shadow: 0 0 10px #2563ebaa;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: #a5b4fc;
+      user-select: none;
+    }
+    #controls-info b {
+      color: #60a5fa;
+    }
   </style>
 </head>
 <body class="flex flex-col items-center min-h-screen p-6 bg-gray-900 text-white">
@@ -214,13 +237,24 @@
 
   <div id="soundList" class="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
+  <div id="controls-info">
+    <b>Управление клавишами при выделенном звуке:</b><br />
+    • <b>Пробел</b> — воспроизведение / пауза<br />
+    • <b>Enter</b> — воспроизведение с начала<br />
+    • <b>S</b> — стоп<br />
+    • <b>Delete</b> — удалить звук (с подтверждением)<br />
+    • <b>Стрелки вверх / вниз</b> — переключение выделения между звуками<br /><br />
+    <b>Если звук не выделен:</b> нажимайте назначенные клавиши для запуска звуков<br />
+    <i>Кликните по карточке, чтобы выделить звук для управления</i><br /><br />
+    <b>Клик по пустому месту (вне карточек) снимает выделение</b>
+  </div>
+
   <script>
     const soundList = document.getElementById("soundList");
     const dropZone = document.getElementById("dropZone");
     const fileInput = document.getElementById("fileInput");
 
     let sounds = JSON.parse(localStorage.getItem("sounds") || "[]");
-
     const playingAudios = new Map();
 
     renderSounds();
@@ -228,6 +262,40 @@
     function isValidKey(key) {
       return /^[a-z0-9]$/i.test(key);
     }
+
+    let selectedSoundIndex = null;
+
+    function selectSound(index) {
+      if (selectedSoundIndex !== null) {
+        soundList.children[selectedSoundIndex]?.classList.remove("selected");
+      }
+      selectedSoundIndex = index;
+      if (selectedSoundIndex !== null) {
+        soundList.children[selectedSoundIndex]?.classList.add("selected");
+        soundList.children[selectedSoundIndex]?.scrollIntoView({ block: "nearest" });
+      }
+    }
+
+    document.body.addEventListener("click", (e) => {
+      const path = e.composedPath ? e.composedPath() : e.path || [];
+      if (!path.some(el => el.classList && el.classList.contains && el.classList.contains("sound-card"))) {
+        if (selectedSoundIndex !== null) {
+          soundList.children[selectedSoundIndex]?.classList.remove("selected");
+          selectedSoundIndex = null;
+        }
+      }
+    });
+
+    soundList.addEventListener("click", (e) => {
+      e.stopPropagation();
+      let card = e.target;
+      while (card && !card.classList.contains("sound-card")) {
+        card = card.parentElement;
+      }
+      if (!card) return;
+      const index = Array.from(soundList.children).indexOf(card);
+      if (index !== -1) selectSound(index);
+    });
 
     function renderSounds() {
       soundList.innerHTML = "";
@@ -255,7 +323,7 @@
         keybindInput.maxLength = 1;
         keybindInput.placeholder = "-";
         keybindInput.className = "keybind-input";
-        keybindInput.value = sound.keybind || "";
+        keybindInput.value = sound.keybind ? sound.keybind.toUpperCase() : "";
         keybindInput.title = "Нажмите клавишу для бинда";
 
         keybindInput.addEventListener("keydown", (e) => {
@@ -286,14 +354,14 @@
         controls.className = "flex gap-3 mt-3";
 
         const playBtn = document.createElement("button");
-        playBtn.title = "Воспроизвести";
+        playBtn.title = "Воспроизвести с начала";
         playBtn.className = "btn-play";
         playBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
           <path d="M14.752 11.168l-6.518-3.75A1 1 0 007 8.168v7.664a1 1 0 001.234.97l6.518-3.75a1 1 0 000-1.664z"/>
         </svg>`;
         playBtn.onclick = () => {
-          playSound(sound);
+          playSoundFromStart(sound);
           playBtn.classList.add("animate");
           setTimeout(() => playBtn.classList.remove("animate"), 700);
         };
@@ -310,42 +378,53 @@
           pauseSound(sound);
         };
 
-        const openBtn = document.createElement("button");
-        openBtn.title = "Открыть в новой вкладке";
-        openBtn.className = "btn-open";
-        openBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+        const stopBtn = document.createElement("button");
+        stopBtn.title = "Стоп";
+        stopBtn.className = "btn-stop";
+        stopBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
           viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
-          <path d="M14 3h7v7m0 0L10 21l-7-7 11-11z"/>
+          <rect x="6" y="6" width="12" height="12" rx="2" ry="2"/>
         </svg>`;
-        openBtn.onclick = () => openShareableTab(sound);
+        stopBtn.onclick = () => {
+          stopSound(sound);
+        };
 
-        const delBtn = document.createElement("button");
-        delBtn.title = "Удалить";
-        delBtn.className = "btn-delete";
-        delBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
-          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5">
-          <path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5-4h4m-4 0a1 1 0 00-1 1v1h6V4a1 1 0 00-1-1m-4 0h4"/>
+        const deleteBtn = document.createElement("button");
+        deleteBtn.title = "Удалить";
+        deleteBtn.className = "btn-delete";
+        deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6">
+          <path d="M3 6h18"/>
+          <path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6"/>
+          <path d="M14 11v6"/>
+          <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/>
         </svg>`;
-        delBtn.onclick = () => {
-          fadeOutRemove(card, () => {
+        deleteBtn.onclick = () => {
+          if (confirm(`Удалить звук "${sound.name}"?`)) {
             stopSound(sound);
-            sounds.splice(sounds.indexOf(sound), 1);
+            sounds.splice(index, 1);
             saveSounds();
             renderSounds();
-          });
+            if (sounds.length === 0) {
+              selectedSoundIndex = null;
+            } else if (selectedSoundIndex >= sounds.length) {
+              selectSound(sounds.length - 1);
+            } else {
+              selectSound(selectedSoundIndex);
+            }
+          }
         };
 
         controls.appendChild(playBtn);
         controls.appendChild(pauseBtn);
-        controls.appendChild(openBtn);
-        controls.appendChild(delBtn);
+        controls.appendChild(stopBtn);
+        controls.appendChild(deleteBtn);
 
         const progress = document.createElement("div");
         progress.className = "progress";
-
         const progressBar = document.createElement("div");
         progressBar.className = "progress-bar";
-
         progress.appendChild(progressBar);
 
         card.appendChild(titleContainer);
@@ -354,146 +433,169 @@
 
         soundList.appendChild(card);
 
-        sound._progressBar = progressBar;
-      });
-    }
+        if (!sound.audio) {
+          const audio = new Audio(sound.url);
+          audio.preload = "auto";
+          sound.audio = audio;
 
-    function fadeOutRemove(element, callback) {
-      element.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-      element.style.opacity = "0";
-      element.style.transform = "translateY(15px)";
-      setTimeout(callback, 400);
+          audio.addEventListener("timeupdate", () => {
+            const progressPercent = (audio.currentTime / audio.duration) * 100 || 0;
+            progressBar.style.width = progressPercent + "%";
+          });
+          audio.addEventListener("ended", () => {
+            progressBar.style.width = "0%";
+            playingAudios.delete(sound);
+          });
+        }
+      });
     }
 
     function saveSounds() {
-      localStorage.setItem("sounds", JSON.stringify(sounds));
+      const soundsToSave = sounds.map(({ name, url, keybind }) => ({ name, url, keybind }));
+      localStorage.setItem("sounds", JSON.stringify(soundsToSave));
     }
 
-    const playCooldown = 500;
-    const lastPlayTime = new Map();
+    function playSoundFromStart(sound) {
+      if (!sound.audio) return;
+      stopSound(sound); 
+      sound.audio.currentTime = 0;
+      sound.audio.play();
+      playingAudios.set(sound, { audio: sound.audio });
+    }
 
     function playSound(sound) {
-      const now = Date.now();
-      const lastTime = lastPlayTime.get(sound) || 0;
-      if (now - lastTime < playCooldown) {
-        return;
+      if (!sound.audio) return;
+      if (!playingAudios.has(sound)) {
+        playingAudios.set(sound, { audio: sound.audio });
       }
-      lastPlayTime.set(sound, now);
-
-      stopSound(sound);
-
-      const audio = new Audio(sound.data);
-      audio.crossOrigin = "anonymous";
-      audio.play();
-
-      const pb = sound._progressBar;
-      pb.style.opacity = "0.8";
-      pb.style.width = "0%";
-
-      const interval = setInterval(() => {
-        if (!audio.duration || isNaN(audio.duration)) return;
-        const progress = (audio.currentTime / audio.duration) * 100;
-        pb.style.width = progress + "%";
-        if (audio.ended) {
-          clearInterval(interval);
-          pb.style.width = "0%";
-          pb.style.opacity = "0";
-          playingAudios.delete(sound);
-        }
-      }, 100);
-
-      playingAudios.set(sound, { audio, interval });
+      sound.audio.play();
     }
 
     function pauseSound(sound) {
-      const player = playingAudios.get(sound);
-      if (player && player.audio) {
-        player.audio.pause();
-        clearInterval(player.interval);
-        playingAudios.delete(sound);
-        if (sound._progressBar) {
-          sound._progressBar.style.opacity = "0";
-          sound._progressBar.style.width = "0%";
-        }
-      }
+      if (!sound.audio) return;
+      sound.audio.pause();
+      playingAudios.delete(sound);
     }
 
     function stopSound(sound) {
-      const player = playingAudios.get(sound);
-      if (player && player.audio) {
-        player.audio.pause();
-        player.audio.currentTime = 0;
-        clearInterval(player.interval);
-        playingAudios.delete(sound);
-        if (sound._progressBar) {
-          sound._progressBar.style.opacity = "0";
-          sound._progressBar.style.width = "0%";
-        }
-      }
+      if (!sound.audio) return;
+      sound.audio.pause();
+      sound.audio.currentTime = 0;
+      playingAudios.delete(sound);
     }
-
-    function openShareableTab(sound) {
-      const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(
-        sound.name
-      )}</title></head><body style="background:#111;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh;margin:0;font-family:sans-serif"><h2 style="margin-bottom:16px">${escapeHtml(
-        sound.name
-      )}</h2><audio id="a" controls autoplay src="${sound.data}"></audio><p style="font-size:12px;color:#ccc;margin-top:12px">Поделитесь этой вкладкой в Google Meet (Share → A Chrome tab → Share audio)</p><script>document.querySelector('audio').volume=1;<\/script></body></html>`;
-      const w = window.open();
-      w.document.write(html);
-      w.document.close();
-    }
-
-    function escapeHtml(text) {
-      return text.replace(/[&<>\\"]/g, (c) =>
-        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])
-      );
-    }
-
-    function fileToBase64(file) {
-      return new Promise((res, rej) => {
-        const reader = new FileReader();
-        reader.onload = () => res(reader.result);
-        reader.onerror = rej;
-        reader.readAsDataURL(file);
-      });
-    }
-
-    dropZone.addEventListener("click", () => fileInput.click());
-    fileInput.addEventListener("change", handleFiles);
 
     dropZone.addEventListener("dragover", (e) => {
       e.preventDefault();
       dropZone.classList.add("dragover");
     });
-    dropZone.addEventListener("dragleave", () => {
+
+    dropZone.addEventListener("dragleave", (e) => {
+      e.preventDefault();
       dropZone.classList.remove("dragover");
     });
+
     dropZone.addEventListener("drop", (e) => {
       e.preventDefault();
       dropZone.classList.remove("dragover");
-      handleFiles({ target: { files: e.dataTransfer.files } });
+      const files = Array.from(e.dataTransfer.files);
+      loadFiles(files);
     });
 
-    async function handleFiles(e) {
-      const files = Array.from(e.target.files);
-      for (const file of files) {
-        if (!file.type.startsWith("audio/")) continue;
-        const data = await fileToBase64(file);
-        sounds.unshift({ name: file.name.replace(/\.[^/.]+$/, ""), data });
-        saveSounds();
-      }
+    dropZone.addEventListener("click", () => {
+      fileInput.click();
+    });
+
+    fileInput.addEventListener("change", () => {
+      loadFiles(Array.from(fileInput.files));
+      fileInput.value = "";
+    });
+
+    function loadFiles(files) {
+      files.forEach((file) => {
+        if (!file.type.startsWith("audio")) return;
+        const url = URL.createObjectURL(file);
+        sounds.push({
+          name: file.name.replace(/\.[^/.]+$/, ""),
+          url,
+          keybind: "",
+          audio: null,
+        });
+      });
+      saveSounds();
       renderSounds();
     }
 
     document.addEventListener("keydown", (e) => {
-      const tag = document.activeElement.tagName.toLowerCase();
-      if (tag === "input" || tag === "textarea") return;
+      if (
+        e.target.tagName.toLowerCase() === "input" ||
+        e.target.tagName.toLowerCase() === "textarea"
+      )
+        return;
 
       const key = e.key.toLowerCase();
 
-      const sound = sounds.find(s => s.keybind && s.keybind.toLowerCase() === key);
-      if (sound) {
-        playSound(sound);
+      if (selectedSoundIndex !== null) {
+        const selectedSound = sounds[selectedSoundIndex];
+
+        switch (key) {
+          case " ":
+            e.preventDefault();
+            if (selectedSound.audio.paused) {
+              playSound(selectedSound);
+            } else {
+              pauseSound(selectedSound);
+            }
+            break;
+          case "enter":
+            e.preventDefault();
+            playSoundFromStart(selectedSound);
+            break;
+          case "s":
+            e.preventDefault();
+            stopSound(selectedSound);
+            break;
+          case "delete":
+            e.preventDefault();
+            if (confirm(`Удалить звук "${selectedSound.name}"?`)) {
+              const card = soundList.children[selectedSoundIndex];
+              card.style.transition = "opacity 0.5s ease, transform 0.5s ease";
+              card.style.opacity = "0";
+              card.style.transform = "translateY(20px)";
+              setTimeout(() => {
+                stopSound(selectedSound);
+                sounds.splice(selectedSoundIndex, 1);
+                saveSounds();
+                renderSounds();
+                if (sounds.length === 0) {
+                  selectedSoundIndex = null;
+                } else if (selectedSoundIndex >= sounds.length) {
+                  selectSound(sounds.length - 1);
+                } else {
+                  selectSound(selectedSoundIndex);
+                }
+              }, 500);
+            }
+            break;
+          case "arrowdown":
+            e.preventDefault();
+            let nextIndex = selectedSoundIndex + 1;
+            if (nextIndex >= sounds.length) nextIndex = 0;
+            selectSound(nextIndex);
+            break;
+          case "arrowup":
+            e.preventDefault();
+            let prevIndex = selectedSoundIndex - 1;
+            if (prevIndex < 0) prevIndex = sounds.length - 1;
+            selectSound(prevIndex);
+            break;
+        }
+      } else {
+        const sound = sounds.find(
+          (s) => s.keybind && s.keybind.toLowerCase() === key
+        );
+        if (sound) {
+          playSound(sound);
+        }
       }
     });
   </script>
